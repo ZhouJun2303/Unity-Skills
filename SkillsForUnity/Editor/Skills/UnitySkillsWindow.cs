@@ -22,7 +22,7 @@ namespace UnitySkills
         private bool _showSkillConfig = true;
         private int _selectedTab = 0;
         private string[] _tabNames = new[] { "Server", "Skills", "AI Config" };
-        
+
         // Server monitoring
         private double _lastRepaintTime;
         private const double RepaintInterval = 0.5; // Repaint every 0.5s for live stats
@@ -46,16 +46,16 @@ namespace UnitySkills
         {
             RefreshSkillsList();
             _serverRunning = SkillsHttpServer.IsRunning;
-            
+
             // Subscribe to editor update for live monitoring
             EditorApplication.update += OnEditorUpdate;
         }
-        
+
         private void OnDisable()
         {
             EditorApplication.update -= OnEditorUpdate;
         }
-        
+
         /// <summary>
         /// Editor update callback - provides backup heartbeat for server
         /// and auto-repaint for live statistics.
@@ -64,7 +64,7 @@ namespace UnitySkills
         {
             // Sync server status
             _serverRunning = SkillsHttpServer.IsRunning;
-            
+
             // Auto-repaint when server is running (shows live stats)
             if (_serverRunning && _selectedTab == 0)
             {
@@ -122,13 +122,13 @@ namespace UnitySkills
             GUILayout.FlexibleSpace();
             GUILayout.Label("UnitySkills", EditorStyles.boldLabel);
             GUILayout.FlexibleSpace();
-            
+
             // Language toggle
             var langLabel = Localization.Current == Localization.Language.English ? "EN" : "中";
             if (GUILayout.Button(langLabel, GUILayout.Width(35)))
             {
-                Localization.Current = Localization.Current == Localization.Language.English 
-                    ? Localization.Language.Chinese 
+                Localization.Current = Localization.Current == Localization.Language.English
+                    ? Localization.Language.Chinese
                     : Localization.Language.English;
             }
             EditorGUILayout.EndHorizontal();
@@ -157,13 +157,13 @@ namespace UnitySkills
             // Server Status
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.BeginHorizontal();
-            
+
             var statusStyle = new GUIStyle(EditorStyles.boldLabel);
             statusStyle.normal.textColor = _serverRunning ? Color.green : Color.red;
             GUILayout.Label(_serverRunning ? L("server_running") : L("server_stopped"), statusStyle);
-            
+
             GUILayout.FlexibleSpace();
-            
+
             if (_serverRunning)
             {
                 if (GUILayout.Button(L("stop_server"), GUILayout.Width(100)))
@@ -186,11 +186,11 @@ namespace UnitySkills
             {
                 // Identity Section
                 EditorGUILayout.HelpBox(
-                    Localization.Current == Localization.Language.Chinese ? 
+                    Localization.Current == Localization.Language.Chinese ?
                     $"端口 (Port): {SkillsHttpServer.Port}\nID: {RegistryService.InstanceId}" :
-                    $"Port: {SkillsHttpServer.Port}\nID: {RegistryService.InstanceId}", 
+                    $"Port: {SkillsHttpServer.Port}\nID: {RegistryService.InstanceId}",
                     MessageType.Info);
-                
+
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button(Localization.Current == Localization.Language.Chinese ? "复制 ID" : "Copy ID", GUILayout.Width(80)))
@@ -201,11 +201,11 @@ namespace UnitySkills
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.SelectableLabel(SkillsHttpServer.Url, EditorStyles.miniLabel, GUILayout.Height(18));
-                
+
                 // Live Server Statistics
                 EditorGUILayout.Space(5);
                 EditorGUILayout.LabelField(L("server_stats"), EditorStyles.miniBoldLabel);
-                
+
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(L("queued_requests") + ":", GUILayout.Width(120));
                 var queueCount = SkillsHttpServer.QueuedRequests;
@@ -213,7 +213,7 @@ namespace UnitySkills
                 queueStyle.normal.textColor = queueCount > 10 ? Color.yellow : (queueCount > 0 ? Color.cyan : Color.gray);
                 EditorGUILayout.LabelField(queueCount.ToString(), queueStyle);
                 EditorGUILayout.EndHorizontal();
-                
+
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(L("total_processed") + ":", GUILayout.Width(120));
                 EditorGUILayout.LabelField(SkillsHttpServer.TotalProcessed.ToString());
@@ -222,13 +222,13 @@ namespace UnitySkills
                     SkillsHttpServer.ResetStatistics();
                 }
                 EditorGUILayout.EndHorizontal();
-                
+
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(L("architecture") + ":", GUILayout.Width(120));
                 EditorGUILayout.LabelField("Producer-Consumer", EditorStyles.miniLabel);
                 EditorGUILayout.EndHorizontal();
             }
-            
+
             // Auto-restart setting
             EditorGUILayout.Space(5);
             EditorGUILayout.BeginHorizontal();
@@ -239,7 +239,7 @@ namespace UnitySkills
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField(L("auto_restart_hint"), EditorStyles.miniLabel);
-            
+
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.Space(10);
@@ -247,11 +247,11 @@ namespace UnitySkills
             // Test Skill Section
             EditorGUILayout.LabelField(L("test_skill"), EditorStyles.boldLabel);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            
+
             _testSkillName = EditorGUILayout.TextField(L("skill_name"), _testSkillName);
             EditorGUILayout.LabelField(L("parameters_json") + ":");
             _testSkillParams = EditorGUILayout.TextArea(_testSkillParams, GUILayout.Height(60));
-            
+
             if (GUILayout.Button(L("execute_skill")))
             {
                 _testResult = SkillRouter.Execute(_testSkillName, _testSkillParams);
@@ -287,7 +287,7 @@ namespace UnitySkills
                 foreach (var kvp in _skillsByCategory.OrderBy(k => k.Key))
                 {
                     _categoryFoldouts[kvp.Key] = EditorGUILayout.Foldout(_categoryFoldouts[kvp.Key], $"{kvp.Key} ({kvp.Value.Count})", true);
-                    
+
                     if (_categoryFoldouts[kvp.Key])
                     {
                         EditorGUI.indentLevel++;
@@ -302,7 +302,7 @@ namespace UnitySkills
                                 _selectedTab = 0; // Switch to server tab
                             }
                             EditorGUILayout.EndHorizontal();
-                            
+
                             // Use localized description if available
                             var desc = Localization.Get(skill.Name);
                             if (desc == skill.Name) desc = skill.Description; // Fallback to original
@@ -325,7 +325,7 @@ namespace UnitySkills
             // Claude Code
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField("Claude Code", EditorStyles.boldLabel);
-            
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(L("install_project") + ":", GUILayout.Width(100));
             if (SkillInstaller.IsClaudeProjectInstalled)
@@ -408,7 +408,7 @@ namespace UnitySkills
             // Antigravity
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField("Antigravity", EditorStyles.boldLabel);
-            
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(L("install_project") + ":", GUILayout.Width(100));
             if (SkillInstaller.IsAntigravityProjectInstalled)
@@ -491,7 +491,7 @@ namespace UnitySkills
             // Gemini CLI
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField("Gemini CLI", EditorStyles.boldLabel);
-            
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(L("install_project") + ":", GUILayout.Width(100));
             if (SkillInstaller.IsGeminiProjectInstalled)
@@ -574,7 +574,7 @@ namespace UnitySkills
             // Codex
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField("Codex", EditorStyles.boldLabel);
-            
+
             EditorGUILayout.BeginHorizontal();
             var experimentalStyle = new GUIStyle(EditorStyles.miniLabel);
             experimentalStyle.normal.textColor = new Color(1f, 0.6f, 0f); // Orange warning color
@@ -612,7 +612,7 @@ namespace UnitySkills
                 {
                     var result = SkillInstaller.InstallCodex(false);
                     if (result.success)
-                        EditorUtility.DisplayDialog("Success", 
+                        EditorUtility.DisplayDialog("Success",
                             Localization.Current == Localization.Language.Chinese
                                 ? "安装成功！\n" + result.message + "\n\n如有问题请查看项目根目录的 AGENTS.md"
                                 : "Install success!\n" + result.message + "\n\nIf issues occur, check AGENTS.md in project root.",
@@ -654,7 +654,7 @@ namespace UnitySkills
                 {
                     var result = SkillInstaller.InstallCodex(true);
                     if (result.success)
-                        EditorUtility.DisplayDialog("Success", 
+                        EditorUtility.DisplayDialog("Success",
                             Localization.Current == Localization.Language.Chinese
                                 ? "安装成功！\n" + result.message + "\n\n请重启 Codex 以加载新 Skill。"
                                 : "Install success!\n" + result.message + "\n\nPlease restart Codex to load new skills.",
@@ -666,13 +666,97 @@ namespace UnitySkills
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
 
+            EditorGUILayout.Space(10);
+
+            // Cursor
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField("Cursor", EditorStyles.boldLabel);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(L("install_project") + ":", GUILayout.Width(100));
+            if (SkillInstaller.IsCursorProjectInstalled)
+            {
+                EditorGUILayout.LabelField(L("installed"), EditorStyles.miniLabel, GUILayout.Width(60));
+                if (GUILayout.Button(L("update"), GUILayout.Width(50)))
+                {
+                    var result = SkillInstaller.InstallCursor(false);
+                    if (result.success)
+                        EditorUtility.DisplayDialog("Success", L("update_success"), "OK");
+                    else
+                        EditorUtility.DisplayDialog("Error", string.Format(L("update_failed"), result.message), "OK");
+                }
+                if (GUILayout.Button(L("uninstall"), GUILayout.Width(60)))
+                {
+                    if (EditorUtility.DisplayDialog(L("uninstall"), string.Format(L("uninstall_confirm"), "Cursor (Project)"), "OK", "Cancel"))
+                    {
+                        var result = SkillInstaller.UninstallCursor(false);
+                        if (result.success)
+                            EditorUtility.DisplayDialog("Success", L("uninstall_success"), "OK");
+                        else
+                            EditorUtility.DisplayDialog("Error", string.Format(L("uninstall_failed"), result.message), "OK");
+                    }
+                }
+            }
+            else
+            {
+                if (GUILayout.Button(L("install_project"), GUILayout.Width(120)))
+                {
+                    var result = SkillInstaller.InstallCursor(false);
+                    if (result.success)
+                        EditorUtility.DisplayDialog("Success", L("install_success") + "\n" + result.message, "OK");
+                    else
+                        EditorUtility.DisplayDialog("Error", string.Format(L("install_failed"), result.message), "OK");
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(L("install_global") + ":", GUILayout.Width(100));
+            if (SkillInstaller.IsCursorGlobalInstalled)
+            {
+                EditorGUILayout.LabelField(L("installed"), EditorStyles.miniLabel, GUILayout.Width(60));
+                if (GUILayout.Button(L("update"), GUILayout.Width(50)))
+                {
+                    var result = SkillInstaller.InstallCursor(true);
+                    if (result.success)
+                        EditorUtility.DisplayDialog("Success", L("update_success"), "OK");
+                    else
+                        EditorUtility.DisplayDialog("Error", string.Format(L("update_failed"), result.message), "OK");
+                }
+                if (GUILayout.Button(L("uninstall"), GUILayout.Width(60)))
+                {
+                    if (EditorUtility.DisplayDialog(L("uninstall"), string.Format(L("uninstall_confirm"), "Cursor (Global)"), "OK", "Cancel"))
+                    {
+                        var result = SkillInstaller.UninstallCursor(true);
+                        if (result.success)
+                            EditorUtility.DisplayDialog("Success", L("uninstall_success"), "OK");
+                        else
+                            EditorUtility.DisplayDialog("Error", string.Format(L("uninstall_failed"), result.message), "OK");
+                    }
+                }
+            }
+            else
+            {
+                if (GUILayout.Button(L("install_global"), GUILayout.Width(120)))
+                {
+                    var result = SkillInstaller.InstallCursor(true);
+                    if (result.success)
+                        EditorUtility.DisplayDialog("Success", L("install_success") + "\n" + result.message +
+                            (Localization.Current == Localization.Language.Chinese ? "\n\n请重启 Cursor 以加载新 Skill。" : "\n\nPlease restart Cursor to load new skills."), "OK");
+                    else
+                        EditorUtility.DisplayDialog("Error", string.Format(L("install_failed"), result.message), "OK");
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
+
             EditorGUILayout.Space(20);
-            
+
             // Help text
             EditorGUILayout.HelpBox(
                 Localization.Current == Localization.Language.Chinese
-                    ? "项目安装：将 Skill 安装到当前 Unity 项目目录\n全局安装：将 Skill 安装到用户目录，所有项目可用\n\n注意：Gemini CLI 需要在 /settings 中启用 experimental.skills\n注意：Codex 需要重启后才会加载新 Skill"
-                    : "Project Install: Install skill to current Unity project\nGlobal Install: Install skill to user folder, available for all projects\n\nNote: Gemini CLI requires enabling experimental.skills in /settings\nNote: Codex requires restart to load new skills",
+                    ? "项目安装：将 Skill 安装到当前 Unity 项目目录\n全局安装：将 Skill 安装到用户目录，所有项目可用\n\n注意：Gemini CLI 需要在 /settings 中启用 experimental.skills\n注意：Codex/Cursor 需要重启后才会加载新 Skill"
+                    : "Project Install: Install skill to current Unity project\nGlobal Install: Install skill to user folder, available for all projects\n\nNote: Gemini CLI requires enabling experimental.skills in /settings\nNote: Codex/Cursor require restart to load new skills",
                 MessageType.Info
             );
         }

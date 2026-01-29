@@ -10,14 +10,14 @@ using System.Collections.Generic;
 namespace UnitySkills
 {
     /// <summary>
-    /// One-click skill installer for Claude Code, Antigravity, and Gemini CLI.
+    /// One-click skill installer for Claude Code, Antigravity, Gemini CLI, Codex, and Cursor.
     /// </summary>
     public static class SkillInstaller
     {
         // Claude Code paths - Claude supports any folder name
         public static string ClaudeProjectPath => Path.Combine(Application.dataPath, "..", ".claude", "skills", "unity-skills");
         public static string ClaudeGlobalPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude", "skills", "unity-skills");
-        
+
         // Antigravity paths
         public static string AntigravityProjectPath => Path.Combine(Application.dataPath, "..", ".agent", "skills", "unity-skills");
         public static string AntigravityGlobalPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".gemini", "antigravity", "skills", "unity-skills");
@@ -32,6 +32,10 @@ namespace UnitySkills
         public static string CodexProjectPath => Path.Combine(Application.dataPath, "..", ".codex", "skills", "unity-skills");
         public static string CodexGlobalPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".codex", "skills", "unity-skills");
 
+        // Cursor paths - .cursor/skills/ in project or user profile
+        public static string CursorProjectPath => Path.Combine(Application.dataPath, "..", ".cursor", "skills", "unity-skills");
+        public static string CursorGlobalPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cursor", "skills", "unity-skills");
+
         public static bool IsClaudeProjectInstalled => Directory.Exists(ClaudeProjectPath) && File.Exists(Path.Combine(ClaudeProjectPath, "SKILL.md"));
         public static bool IsClaudeGlobalInstalled => Directory.Exists(ClaudeGlobalPath) && File.Exists(Path.Combine(ClaudeGlobalPath, "SKILL.md"));
         public static bool IsAntigravityProjectInstalled => Directory.Exists(AntigravityProjectPath) && File.Exists(Path.Combine(AntigravityProjectPath, "SKILL.md"));
@@ -40,6 +44,8 @@ namespace UnitySkills
         public static bool IsGeminiGlobalInstalled => Directory.Exists(GeminiGlobalPath) && File.Exists(Path.Combine(GeminiGlobalPath, "SKILL.md"));
         public static bool IsCodexProjectInstalled => Directory.Exists(CodexProjectPath) && File.Exists(Path.Combine(CodexProjectPath, "SKILL.md"));
         public static bool IsCodexGlobalInstalled => Directory.Exists(CodexGlobalPath) && File.Exists(Path.Combine(CodexGlobalPath, "SKILL.md"));
+        public static bool IsCursorProjectInstalled => Directory.Exists(CursorProjectPath) && File.Exists(Path.Combine(CursorProjectPath, "SKILL.md"));
+        public static bool IsCursorGlobalInstalled => Directory.Exists(CursorGlobalPath) && File.Exists(Path.Combine(CursorGlobalPath, "SKILL.md"));
 
         public static (bool success, string message) InstallClaude(bool global)
         {
@@ -66,11 +72,11 @@ namespace UnitySkills
                 var workflowPath = global ? AntigravityWorkflowGlobalPath : AntigravityWorkflowProjectPath;
                 if (!Directory.Exists(workflowPath))
                     Directory.CreateDirectory(workflowPath);
-                
+
                 var workflowMd = GenerateAntigravityWorkflow();
                 var utf8NoBom = new UTF8Encoding(false);
                 File.WriteAllText(Path.Combine(workflowPath, "unity-skills.md"), workflowMd.Replace("\r\n", "\n"), utf8NoBom);
-                
+
                 return (true, targetPath);
             }
             catch (Exception ex)
@@ -152,7 +158,7 @@ namespace UnitySkills
                 {
                     UpdateAgentsMd();
                 }
-                
+
                 return res;
             }
             catch (Exception ex)
@@ -175,6 +181,32 @@ namespace UnitySkills
                 }
 
                 return res;
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+
+        public static (bool success, string message) InstallCursor(bool global)
+        {
+            try
+            {
+                var targetPath = global ? CursorGlobalPath : CursorProjectPath;
+                return InstallSkill(targetPath, "Cursor");
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+
+        public static (bool success, string message) UninstallCursor(bool global)
+        {
+            try
+            {
+                var targetPath = global ? CursorGlobalPath : CursorProjectPath;
+                return UninstallSkill(targetPath, "Cursor");
             }
             catch (Exception ex)
             {
@@ -231,7 +263,7 @@ This file declares available skills for AI agents like Codex.
                 // Remove unity-skills related lines
                 var lines = content.Split('\n').ToList();
                 lines.RemoveAll(l => l.Contains("unity-skills") || l.Trim() == "## UnitySkills");
-                
+
                 // Clean up empty consecutive lines
                 var cleanedContent = string.Join("\n", lines).Trim() + "\n";
                 var utf8NoBom = new UTF8Encoding(false);
@@ -351,10 +383,10 @@ This file declares available skills for AI agents like Codex.
             sb.AppendLine("```");
             sb.AppendLine();
             sb.AppendLine("## Available Skills");
-            
+
             // Dynamic Reflection Logic
             var skillsByCategory = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Reflection.MethodInfo>>();
-            
+
             var allTypes = System.AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => !a.IsDynamic)
                 .SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } });
@@ -384,12 +416,12 @@ This file declares available skills for AI agents like Codex.
                     var attr = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<UnitySkillAttribute>(method);
                     var skillName = attr.Name ?? method.Name;
                     var description = attr.Description ?? "";
-                    
+
                     var parameters = method.GetParameters()
                         .Select(p => p.Name)
                         .ToArray();
                     var paramStr = string.Join(", ", parameters);
-                    
+
                     sb.AppendLine($"- `{skillName}({paramStr})` - {description}");
                 }
             }
@@ -464,7 +496,7 @@ This file declares available skills for AI agents like Codex.
             sb.AppendLine("- **Save Progress**: Frequently call `scene_save` during automation.");
             sb.AppendLine("- **Undo Support**: Operations are usually undoable in Unity.");
             sb.AppendLine("- **Domain Reload**: Be aware that creating scripts triggers a domain reload.");
-            
+
             return sb.ToString();
         }
 
